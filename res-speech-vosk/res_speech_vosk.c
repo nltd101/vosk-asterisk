@@ -180,6 +180,12 @@ static int vosk_recog_write(struct ast_speech *speech, void *data, int len)
 					ast_verb(4, "(%s) Recognition result: %s\n", vosk_speech->name, text);
 					ast_free(vosk_speech->last_result);
 					vosk_speech->last_result = ast_strdup(text);
+					const char *eof = "{\"eof\" : 1}";
+					ast_websocket_write_string(vosk_speech->ws, eof);
+					if (ast_websocket_wait_for_input(vosk_speech->ws, 1000) > 0) {
+						char * res;
+						ast_websocket_read_string(vosk_speech->ws, &res);
+					}
 					ast_speech_change_state(speech, AST_SPEECH_STATE_DONE);
 				}
 			} else {
